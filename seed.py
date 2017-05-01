@@ -5,7 +5,7 @@ import re
 from model import User
 from model import Rating
 from model import Movie
-
+import datetime
 from model import connect_to_db, db
 from server import app
 
@@ -54,9 +54,9 @@ def load_movies():
             released_at = None
 
         movie = Movie(movie_id=movie_row[0],
-                      title=movie_row[1],
+                      title=title,
                       released_at=released_at,
-                      imdb_url=movie_row[3])
+                      imdb_url=movie_row[4])
 
         # We need to add to the session or it won't ever be stored
         db.session.add(movie)
@@ -68,7 +68,24 @@ def load_movies():
 
 def load_ratings():
     """Load ratings from u.data into database."""
+    
+    print "Ratings"
 
+    # Delete all rows in table, so if we need to run this a second time,
+    # we won't be trying to add duplicate users
+    Rating.query.delete()
+
+    # Read u.user file and insert data
+    for row in open("seed_data/u.data"):
+        row = row.rstrip()
+        user_id, movie_id, score, timestamp = row.split("\t")
+
+        rating = Rating(movie_id=movie_id, user_id=user_id, score=score)
+        # We need to add to the session or it won't ever be stored
+        db.session.add(rating)
+
+    # Once we're done, we should commit our work
+    db.session.commit()
 
 def set_val_user_id():
     """Set value for the next user_id after seeding database"""
