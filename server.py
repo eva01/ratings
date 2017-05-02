@@ -31,6 +31,45 @@ def user_list():
     users = User.query.all()
     return render_template("user_list.html", users=users)
 
+@app.route('/create-account', methods=['GET'])
+def create_account():
+    """ Allows user to create a new account """
+    return render_template('create_account.html')
+
+
+@app.route('/create-account', methods=['POST'])
+def check_create():
+    """ Checks user email is new and processes registration """
+    
+    user_email = request.form.get('email')
+    print user_email
+    user_password = request.form.get('password')
+    user_age = request.form.get('age')
+    user_zip = request.form.get('zip_code')
+    print "Got here!"
+
+    user = User.query.filter_by(email=user_email).all()
+    print user
+
+    if user:
+        flash("User email already exists")
+        return redirect('/login-form')
+    else:
+        new_user = User(email=user_email, password=user_password, age=user_age, zipcode=user_zip)
+        db.session.add(new_user)
+        db.session.commit()
+        session['logged_in_email'] = user_email
+        flash('You are now registered and logged in!')
+        return redirect('/')
+
+
+@app.route('/logout')
+def logout():
+    """Logs out user"""
+    del session['logged_in_email']
+    flash("You are now logged out.")
+    return redirect('/')
+
 
 @app.route('/login-form')
 def login():
@@ -43,8 +82,22 @@ def login():
 def check_login():
     """Check if email in users table"""
     # TODO: check email address against database
+    user_email = request.form.get('email')
+    user_password = request.form.get('password')
 
-    return redirect('/')
+    try:
+        user = User.query.filter_by(email=user_email).one()
+        if user.password == user_password:
+            session['logged_in_email'] = user_email
+            flash('You are now logged in!')
+            return redirect('/')
+        else:
+            flash('Wrong password!')
+            return redirect('/login-form')
+
+    except:
+        flash("No user with that email")
+        return redirect('/create-account')
 
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the

@@ -1,14 +1,40 @@
 <!doctype html>
 <html>
 <head>
-  <title>Ratings</title>
+  <link rel="stylesheet"
+          href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.css"/>
 </head>
 
 <body>
-  Ratings
-  <hr>
+  <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <h1>Ratings</h1>
+                </li>
+                {% if 'logged_in_email' in session %}
+                    <li><a href="/logout">Log Out</a></li>
+                {% else %}
+                    <li><a href="/login-form">Log In</a></li>
+                {% endif %}
+            </ul>
+        </div>
 
-  {% block content %} put your content here {% endblock %}
 
+
+<div class="container">
+
+  <!-- Show flashed messages -->
+  {% with messages = get_flashed_messages() %}
+      {% for message in messages %}
+          <div class="alert alert-warning">{{ message }}</div>
+      {% endfor %}
+  {% endwith %}
+
+  <!-- This is where the main content goes. -->
+  {% block content %}
+      BODY OF PAGE GOES HERE VIA INHERITANCE
+  {% endblock %}
+
+</div>
 </body>
 </html>
