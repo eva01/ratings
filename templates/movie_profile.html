@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <h2>Movie</h2>
+    <p>Title: {{ movie_title }}</p>
+    <p>Release Date: {{ movie_date }}</p>
+    <p><a href="{{ movie_url }}">{{ movie_url }}</a></p>
+    <h3>Ratings</h3>
+    {% if not ratings %}
+    <p>This movie has not been rated yet</p>
+    {% else %}
+    <p>Average Score: {{ avg }}</p>
+      <ul> 
+        {% for rating in ratings %}
+          <li>
+          Score: {{ rating }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+{% endblock %}

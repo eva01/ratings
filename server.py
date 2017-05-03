@@ -31,6 +31,13 @@ def user_list():
     users = User.query.all()
     return render_template("user_list.html", users=users)
 
+@app.route("/movies")
+def movie_list():
+    """Show list of movies."""
+    movies = Movie.query.order_by(Movie.title).all()
+
+    return render_template("movie_list.html", movies=movies)
+
 @app.route('/create-account', methods=['GET'])
 def create_account():
     """ Allows user to create a new account """
@@ -90,7 +97,7 @@ def check_login():
         if user.password == user_password:
             session['logged_in_email'] = user_email
             flash('You are now logged in!')
-            return redirect('/')
+            return redirect('/users/%s' % (user.user_id))
         else:
             flash('Wrong password!')
             return redirect('/login-form')
@@ -98,6 +105,41 @@ def check_login():
     except:
         flash("No user with that email")
         return redirect('/create-account')
+
+@app.route('/users/<user_id>')
+def user_profile(user_id):
+    """Displays a user's profile """
+    user = User.query.get(user_id)
+    user_age = user.age
+    user_zip = user.zipcode
+    ratings = user.ratings
+
+    user_ratings = []
+    for rating in ratings:
+        user_ratings.append((rating.movie.title, rating.score))
+
+    return render_template('user_profile.html', user_age=user_age, user_zip=user_zip,
+                            user_ratings=user_ratings)
+
+
+@app.route('/movies/<movie_id>')
+def movie_profile(movie_id):
+    """Displays a movie's profile """
+    movie = Movie.query.get(movie_id)
+    movie_title = movie.title
+    movie_date = movie.released_at
+    movie_url = movie.imdb_url
+    ratings = movie.ratings
+
+    scores = []
+
+    for rating in ratings:
+        scores.append(rating.score)
+
+    avg = sum(scores) / len(scores)
+
+    return render_template('movie_profile.html', movie_title=movie_title, movie_date=movie_date,
+                            movie_url=movie_url, ratings=scores, avg=avg)
 
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the
@@ -108,8 +150,6 @@ if __name__ == "__main__":
     connect_to_db(app)
 
     # Use the DebugToolbar
-    DebugToolbarExtension(app)
+    # DebugToolbarExtension(app)
 
-
-    
     app.run(port=5000, host='0.0.0.0')
