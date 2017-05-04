@@ -138,8 +138,30 @@ def movie_profile(movie_id):
 
     avg = sum(scores) / len(scores)
 
+    try:
+        current_user = User.query.filter_by(email=session['logged_in_email']).first()
+        user_rating = Rating.query.filter_by(user_id = current_user.user_id, movie_id = movie_id).first().score
+    except:
+        user_rating = 0
+
+
     return render_template('movie_profile.html', movie_title=movie_title, movie_date=movie_date,
-                            movie_url=movie_url, ratings=scores, avg=avg)
+                            movie_url=movie_url, ratings=scores, avg=avg, user_rating=user_rating, movie_id=movie_id)
+
+@app.route("/rate-movie/<movie_id>", methods=['GET'])
+def rate_movie(movie_id):
+    """ Rate or update rating for a movie """
+    movie = Movie.query.get(movie_id)
+    return render_template("rate_movie.html", movie=movie)
+
+@app.route("/rate-movie/<movie_id>", methods=['POST'])
+def accept_movie_rating(movie_id):
+    """ Change rating of movie for user """
+
+    # STUFF HERE
+    return redirect('/movies/<movie_id>')
+
+
 
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the

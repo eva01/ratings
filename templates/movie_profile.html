@@ -5,6 +5,12 @@
     <p>Title: {{ movie_title }}</p>
     <p>Release Date: {{ movie_date }}</p>
     <p><a href="{{ movie_url }}">{{ movie_url }}</a></p>
+    {% if ('logged_in_email' in session) and (user_rating)  %}
+      <p>You rated this movie a {{ user_rating }}</p>
+      <a href="/rate-movie/{{ movie_id }}">Update rating</a>
+    {% elif ('logged_in_email' in session) %}
+      <a href="/rate-movie/{{ movie_id }}">Rate this movie!</a>
+    {% endif %}
     <h3>Ratings</h3>
     {% if not ratings %}
     <p>This movie has not been rated yet</p>
@@ -16,7 +22,7 @@
           Score: {{ rating }}
           </li>
         {% endfor %}
+      {% endif %}
       </ul>
-    {% endif %}
 
 {% endblock %}
