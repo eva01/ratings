@@ -132,21 +132,26 @@ def movie_profile(movie_id):
     ratings = movie.ratings
 
     scores = []
+    user_rating = None
+    prediction = None
 
     for rating in ratings:
         scores.append(rating.score)
-
     avg = sum(scores) / len(scores)
 
-    try:
+    if session['logged_in_email']:
         current_user = User.query.filter_by(email=session['logged_in_email']).first()
-        user_rating = Rating.query.filter_by(user_id = current_user.user_id, movie_id = movie_id).first().score
-    except:
-        user_rating = 0
+        try:
+            user_rating = Rating.query.filter_by(user_id = current_user.user_id, movie_id = movie_id).first().score
+        except:
+            user_rating = 0
+            prediction = current_user.predict_rating(movie)
 
 
     return render_template('movie_profile.html', movie_title=movie_title, movie_date=movie_date,
-                            movie_url=movie_url, ratings=scores, avg=avg, user_rating=user_rating, movie_id=movie_id)
+                            movie_url=movie_url, ratings=scores, avg=avg, user_rating=user_rating, 
+                            movie_id=movie_id, prediction=prediction)
+
 
 @app.route("/rate-movie/<movie_id>", methods=['GET'])
 def rate_movie(movie_id):
@@ -154,13 +159,27 @@ def rate_movie(movie_id):
     movie = Movie.query.get(movie_id)
     return render_template("rate_movie.html", movie=movie)
 
+
 @app.route("/rate-movie/<movie_id>", methods=['POST'])
 def accept_movie_rating(movie_id):
     """ Change rating of movie for user """
 
-    # STUFF HERE
-    return redirect('/movies/<movie_id>')
+    try:
+        current_user = User.query.filter_by(email=session['logged_in_email']).first()
+        user_rating = Rating.query.filter_by(user_id=current_user.user_id, movie_id=movie_id).first()
+    except:
+        user_rating = 0
 
+    movie_rating = request.form.get("movierating")
+
+    if user_rating:
+        user_rating.score = movie_rating
+    else:
+        db.session.add(Rating(movie_id=movie_id, user_id=current_user.user_id, score=movie_rating))
+
+    db.session.commit()
+
+    return redirect('/movies/'+movie_id)
 
 
 if __name__ == "__main__":

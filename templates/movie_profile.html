@@ -9,6 +9,7 @@
       <p>You rated this movie a {{ user_rating }}</p>
       <a href="/rate-movie/{{ movie_id }}">Update rating</a>
     {% elif ('logged_in_email' in session) %}
+      <p>We predict you will rate this movie {{ '%0.2f' % prediction }}<p>
       <a href="/rate-movie/{{ movie_id }}">Rate this movie!</a>
     {% endif %}
     <h3>Ratings</h3>
